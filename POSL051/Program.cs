@@ -5,80 +5,124 @@ using Newtonsoft.Json;
 
 namespace POSL051
 {
-    public class Fruit
+    public class Function1Exception : ApplicationException
     {
-        [JsonProperty(PropertyName = "fruit")]
-        public string Type { get; set; }
-        public string Size { get; set; }
-        public string Color { get; set; }
-    }
+        public int A { get; set; }
+        
+        public int B { get; set; }
 
-    public class Indicator
-    {
-        public string id { get; set; }
-        public string value { get; set; }
-    }
+        public int Result { get; set; }
 
-    public class Country
-    {
-        public string id { get; set; }
-        public string value { get; set; }
-    }
 
-    public class Statistic
-    {
-        public Indicator indicator { get; set; }
-        public Country country { get; set; }
-        public string value { get; set; }
-        public string @decimal { get; set; }
-        public string date { get; set; }
-    }
+        public Function1Exception() : base() { }
+        public Function1Exception(string message) : base(message) { }
+        public Function1Exception(string message, Exception innerException) : base(message, innerException) { }
 
+
+    }
 
 
     class Program
     {
         static void Main(string[] args)
         {
-            List<Statistic> list;
 
-            //Otwieramy stream pliku sample.txt
-            using (var sr = new StreamReader("db.json"))
+            int result;
+            try
             {
-                var json = sr.ReadToEnd();
+                Divider2(null, 2);
+                Console.WriteLine("Done");
+            }
+            catch (Function1Exception ex)
+            {
+                result = ex.Result;
+                //Console.WriteLine($"Błąd aplikacji w metodzie {ex.Message}, parametry: {ex.A}, {ex.B}");
+                //if (ex.InnerException != null)
+                //{
+                //    Console.WriteLine(ex.InnerException.Message);
+                //}
+            }
+            catch (ApplicationException ex)
+            {
 
-                list = JsonConvert.DeserializeObject<List<Statistic>>(json);
+                Console.WriteLine("Błąd aplikacji w metodzie " + ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine(ex.InnerException.Message);
+                }
+            }
+            catch (SystemException ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Console.WriteLine("Finally");
             }
 
 
-            //List<Fruit> list;
-
-            ////Otwieramy stream pliku sample.txt
-            //using (var sr = new StreamReader("sample.json"))
-            //{
-            //    var json = sr.ReadToEnd();
-
-            //    list = JsonConvert.DeserializeObject<List<Fruit>>(json);
-            //}
-
-
-            //list.Add(new Fruit()
-            //{
-            //    Color = "Black",
-            //    Type = "Banana",
-            //    Size = "small"
-            //});
-
-
-            //using (var sw = new StreamWriter("sample.json"))
-            //{
-            //    var json = JsonConvert.SerializeObject(list);
-
-            //    sw.WriteLine(json);
-            //}
-
 
             Console.ReadLine();
+        }
+
+        static void Divider2(Nullable<int> a, int? b)
+        {
+            //throw new Exception((a.Value / b.Value).ToString());
+
+
+            try
+            {
+                if (a == null || !a.HasValue)
+                {
+                    throw new NullReferenceException();
+                }
+
+
+                if (b == null)
+                {
+                    throw new Function1Exception("Divider null Value")
+                    {
+                        A = a ?? 0,
+                        B = b ?? 0
+                    };
+                }
+
+
+                int resutl = a.Value / b.Value;
+            }
+            catch (Exception ex)
+            {
+
+                throw new Function1Exception("Divider", ex)
+                {
+                    A = a ?? 0,
+                    B = b ?? 0
+                };
+            }
+        }
+
+
+        static int Divider(int a, int b)
+        {
+            try
+            {
+                return a / b;
+            }
+            catch (Exception ex)
+            {
+
+                throw new Function1Exception("Divider", ex)
+                {
+                    A = a,
+                    B = b
+                };
+            }
         }
     }
 }
