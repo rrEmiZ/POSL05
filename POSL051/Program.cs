@@ -5,6 +5,9 @@ using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Data;
 using System.Linq;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using NPOI.HSSF.UserModel;
 
 namespace POSL051
 {
@@ -14,9 +17,9 @@ namespace POSL051
         public int Id { get; set; }
 
         public string Nazwisko { get; set; }
-        public string Imie { get;  set; }
-        public string NrAlbumu { get;  set; }
-        public string Grupa { get;  set; }
+        public string Imie { get; set; }
+        public string NrAlbumu { get; set; }
+        public string Grupa { get; set; }
     }
 
     class Program
@@ -25,52 +28,96 @@ namespace POSL051
         {
             var students = GetStudentsFromDB();
 
-           // EXPORT
-            using (var sw = new StreamWriter("export.csv"))
-            {
-                sw.WriteLine("Id,Imie,Nazwisko,NrAlbumu");
-                foreach (var student in students)
-                {
-                    sw.WriteLine($"{student.Id},{student.Imie},{student.Nazwisko},{student.NrAlbumu}");
-                }
+            //Export(students);
 
-            }
-
-            var listImported = new List<Student>();
-            using (var sr = new StreamReader("export.csv"))
-            {
-                var line = sr.ReadLine();
-                var splitedHdr = line.Split(',').ToList();
-                var idxId = splitedHdr.IndexOf("Id"); 
-                var idxImie = splitedHdr.IndexOf("Imie");
-                var idxNazwisko = splitedHdr.IndexOf("Nazwisko");
-                var idxNrAlbumu = splitedHdr.IndexOf("NrAlbumu");
-
-
-
-
-                line = sr.ReadLine();
-                while (line != null)
-                {
-                   string[] splited = line.Split(',');
-
-                    listImported.Add(new Student()
-                    {
-                        Imie = splited[idxImie],
-                        Nazwisko = splited[idxNazwisko],
-                        NrAlbumu = splited[idxNrAlbumu],
-                        Id = Convert.ToInt32(splited[idxId])
-
-                    });
-
-                    line = sr.ReadLine();
-                }
-            }
+            var studentsImported = Import();
 
 
             Console.ReadLine();
         }
 
+        private static List<Student> Import()
+        {
+            var students = new List<Student>();
+            try
+            {
+                using (FileStream stream = new FileStream("test.xlsx", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    IWorkbook workbook;
+                    bool useXlsx = true;
+
+                    if (useXlsx)
+                        workbook = new XSSFWorkbook(stream);
+                    else
+                        workbook = new HSSFWorkbook(stream);
+
+                    var sheet = workbook.GetSheet("Ark1");
+
+                    for (int row = 0; row <= sheet.LastRowNum; row++)
+                    {
+                        var rowObj = sheet.GetRow(row);
+                        if (rowObj != null)
+                        {
+                            students.Add(new Student()
+                            {
+                                Imie = rowObj.GetCell(1).StringCellValue,
+                                Nazwisko = rowObj.GetCell(2).StringCellValue,
+                                Id = Convert.ToInt32(rowObj.GetCell(0).NumericCellValue)
+                            });
+                        }
+                    }
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return students;
+        }
+
+        private static void Export(List<Student> studens)
+        {
+            IWorkbook workbook;
+            bool useXlsx = true;
+
+            if (useXlsx)
+                workbook = new XSSFWorkbook();
+            else
+                workbook = new HSSFWorkbook();
+
+            var sheet = workbook.CreateSheet("Ark1");
+
+            var rowIdx = 0;
+
+            foreach (var student in studens)
+            {
+                var row = sheet.CreateRow(rowIdx++);
+                int cellIdx = 0;
+                {
+                    var cell = row.CreateCell(cellIdx++);
+                    cell.SetCellValue(student.Id);
+                }
+                {
+                    var cell = row.CreateCell(cellIdx++);
+                    cell.SetCellValue(student.Imie);
+                }
+                {
+                    var cell = row.CreateCell(cellIdx++);
+                    cell.SetCellValue(student.Nazwisko);
+                }
+                {
+                    var cell = row.CreateCell(cellIdx++);
+                    cell.SetCellValue(student.NrAlbumu);
+                }
+            }
+
+            using (FileStream stream = new FileStream("test.xlsx", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                workbook.Write(stream);
+            }
+        }
 
         static List<Student> GetStudentsFromDB()
         {
