@@ -24,100 +24,21 @@ namespace POSL051
 
     class Program
     {
+
         static void Main(string[] args)
         {
             var students = GetStudentsFromDB();
 
-            //Export(students);
-
-            var studentsImported = Import();
+            var anyEx = students.Count(x => !x.Nazwisko.StartsWith('K') || x.Id < 2);
 
 
+          //  anyEx.ForEach(x => { Console.WriteLine(x.Nazwisko); });
+
+         
             Console.ReadLine();
         }
 
-        private static List<Student> Import()
-        {
-            var students = new List<Student>();
-            try
-            {
-                using (FileStream stream = new FileStream("test.xlsx", FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                {
-                    IWorkbook workbook;
-                    bool useXlsx = true;
 
-                    if (useXlsx)
-                        workbook = new XSSFWorkbook(stream);
-                    else
-                        workbook = new HSSFWorkbook(stream);
-
-                    var sheet = workbook.GetSheet("Ark1");
-
-                    for (int row = 0; row <= sheet.LastRowNum; row++)
-                    {
-                        var rowObj = sheet.GetRow(row);
-                        if (rowObj != null)
-                        {
-                            students.Add(new Student()
-                            {
-                                Imie = rowObj.GetCell(1).StringCellValue,
-                                Nazwisko = rowObj.GetCell(2).StringCellValue,
-                                Id = Convert.ToInt32(rowObj.GetCell(0).NumericCellValue)
-                            });
-                        }
-                    }
-
-
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            return students;
-        }
-
-        private static void Export(List<Student> studens)
-        {
-            IWorkbook workbook;
-            bool useXlsx = true;
-
-            if (useXlsx)
-                workbook = new XSSFWorkbook();
-            else
-                workbook = new HSSFWorkbook();
-
-            var sheet = workbook.CreateSheet("Ark1");
-
-            var rowIdx = 0;
-
-            foreach (var student in studens)
-            {
-                var row = sheet.CreateRow(rowIdx++);
-                int cellIdx = 0;
-                {
-                    var cell = row.CreateCell(cellIdx++);
-                    cell.SetCellValue(student.Id);
-                }
-                {
-                    var cell = row.CreateCell(cellIdx++);
-                    cell.SetCellValue(student.Imie);
-                }
-                {
-                    var cell = row.CreateCell(cellIdx++);
-                    cell.SetCellValue(student.Nazwisko);
-                }
-                {
-                    var cell = row.CreateCell(cellIdx++);
-                    cell.SetCellValue(student.NrAlbumu);
-                }
-            }
-
-            using (FileStream stream = new FileStream("test.xlsx", FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            {
-                workbook.Write(stream);
-            }
-        }
 
         static List<Student> GetStudentsFromDB()
         {
