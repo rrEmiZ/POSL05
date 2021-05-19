@@ -25,28 +25,24 @@ namespace POSL051
     class Program
     {
 
+        static void GetMethods(object obj)
+        {
+            var type = obj.GetType();
+            Console.WriteLine("Typ: " + type.Name);
+
+           var methods = type.GetMethods();
+
+            foreach (var method in methods)
+            {
+                Console.WriteLine("Metoda: " + method.Name + ", params: " +  string.Join(", ",method.GetParameters().Select(x=> x.Name)));
+            }
+
+        }
+
         static void Main(string[] args)
         {
-            var foo = new Foo()
-            {
-                MyProperty = 10
-            };
 
-
-            //z użyciem refleksji
-            var type = Type.GetType("POSL051.Foo"); //string powinien zawierać namespace naszej klasy
-
-            var methods = type.GetMethods();
-
-            MethodInfo inf = type.GetMethod("Hello");
-
-            inf.Invoke(foo, null); // jako drugi parametr metoda Invoke przyjmuje tablicę  Object[] są to parametry metody hello.
-
-            var propInfo = type.GetProperty("MyProperty");
-
-            var propValue = propInfo.GetValue(foo);
-
-            inf.Invoke(foo, null);
+            GetMethods(2d);
 
             Console.ReadLine();
         }
