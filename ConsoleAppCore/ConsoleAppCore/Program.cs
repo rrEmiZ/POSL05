@@ -21,14 +21,43 @@ namespace ConsoleAppCore
 
                 //db.SaveChanges();
 
-                db.Discounts.Add(new Discount()
-                {
-                    CategoryId = 1,
-                    Code = "TEST",
-                    DicuntValue = .5
-                });
+                //db.Discounts.Add(new Discount()
+                //{
+                //    CategoryId = 1,
+                //    Code = "TEST",
+                //    DicuntValue = .5
+                //});
 
-                db.SaveChanges();
+                //db.SaveChanges();
+
+                using (var trans = db.Database.BeginTransaction( ))
+                {
+                    var brand = new Brand()
+                    {
+                        BrandName = "TESTTTTTTTTTTXXC"
+                    };
+
+                    db.Brands.Add(brand);
+                    db.SaveChanges();
+
+                    var product = new Product()
+                    {
+                        BrandId = brand.BrandId,
+                        CategoryId = 1,
+                        ListPrice = 4,
+                        ModelYear = 1,
+                        ProductName = "Unit tests"
+                    };
+
+                    db.Products.Add(product);
+                    db.SaveChanges();
+
+
+
+                    trans.Commit();
+                }
+
+
             }
 
 
@@ -36,43 +65,43 @@ namespace ConsoleAppCore
             Console.ReadLine();
         }
 
-        static List<ProductDto> GetProducts(DateTime date)
-        {
-            using (var db = new BikeStoresContext())
-            {
-                var disconts = db.Discounts.Where(x => x.DateFrom >= date && x.DateTo <= date).ToList();
+        //static List<ProductDto> GetProducts(DateTime date)
+        //{
+        //    using (var db = new BikeStoresContext())
+        //    {
+        //        var disconts = db.Discounts.Where(x => x.DateFrom >= date && x.DateTo <= date).ToList();
 
-                var products = db.Products.ToList();
-
-
-                return products.Select(p =>
-                {
-                    var dto = new ProductDto()
-                    {
-                        Name = p.ProductName
-                    };
-
-                    if (disconts.Any(d => d.ProductId == p.ProductId || d.BrandId == p.BrandId || d.CategoryId == p.CategoryId))
-                    {
-                        if (disconts.Any(d => d.ProductId == p.ProductId))
-                        {
-                            var discount = disconts.FirstOrDefault(d => d.ProductId == p.ProductId);
-
-                            dto.Price = p.ListPrice - (p.ListPrice * discount.DicountProcent);
-                        }
-
-                        //Brand ..
+        //        var products = db.Products.ToList();
 
 
-                        //Category..
-                    }
+        //        return products.Select(p =>
+        //        {
+        //            var dto = new ProductDto()
+        //            {
+        //                Name = p.ProductName
+        //            };
+
+        //            if (disconts.Any(d => d.ProductId == p.ProductId || d.BrandId == p.BrandId || d.CategoryId == p.CategoryId))
+        //            {
+        //                if (disconts.Any(d => d.ProductId == p.ProductId))
+        //                {
+        //                    var discount = disconts.FirstOrDefault(d => d.ProductId == p.ProductId);
+
+        //                    dto.Price = p.ListPrice - (p.ListPrice * discount.DicountProcent);
+        //                }
+
+        //                //Brand ..
 
 
-                    return dto;
-                }).ToList();
+        //                //Category..
+        //            }
 
 
-            }
-        }
+        //            return dto;
+        //        }).ToList();
+
+
+        //    }
+        //}
     }
 }
