@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using ConsoleAppCore.DbModels;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace ConsoleAppCore
 {
@@ -11,25 +14,73 @@ namespace ConsoleAppCore
     {
         static async Task Main(string[] args)
         {
-            using (var db = new BikeStoresContext())
+            try
             {
-                var discountsTask = GetDiscountsAsync();
+                var reqService = new RequestService();
 
-                var prods = await db.Products.ToListAsync();
+//                var data = await reqService.GetAsync<List<Post>>("https://jsonplaceholder.typicode.com/posts");
 
-                var discunts = await discountsTask;
+                var newPost = new Post()
+                {
+                    Body = "TEst",
+                    Title = "test",
+                    UserId = 1
+                };
+
+                var result = await reqService.PostAsync("https://jsonplaceholder.typicode.com/posts", newPost);
 
             }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+
+            Console.ReadLine();
         }
 
 
-        static async Task<List<Discount>> GetDiscountsAsync()
-        {
-            using (var db = new BikeStoresContext())
-            {
-                return await db.Discounts.ToListAsync();
-            }
-        }
+        //GET STANDARD
+        //HttpClient client = new HttpClient();
+
+        //HttpResponseMessage response = await client.GetAsync("https://jsonplaceholder.typicode.com/posts");
+
+        //if(response.IsSuccessStatusCode)
+        //{
+        //    var json = await response.Content.ReadAsStringAsync();
+
+        //var data = JsonConvert.DeserializeObject<List<Post>>(json);
+        //}
+
+        //var newPost = new Post()
+        //{
+        //    Body = "TEst",
+        //    Title = "test",
+        //    UserId = 1
+        //};
+        //var requestJson = JsonConvert.SerializeObject(newPost);
+
+        //HttpClient client = new HttpClient();
+
+        //var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+        //var response = await client.PostAsync("https://jsonplaceholder.typicode.com/posts", content);
+
+        //if (response.IsSuccessStatusCode)
+        //{
+        //    var json = await response.Content.ReadAsStringAsync();
+
+        //    var data = JsonConvert.DeserializeObject<Post>(json);
+        //}
+
+
+        //static async Task<List<Discount>> GetDiscountsAsync()
+        //{
+        //    using (var db = new BikeStoresContext())
+        //    {
+        //        return await db.Discounts.ToListAsync();
+        //    }
+        //}
     }
 
     //class Program
